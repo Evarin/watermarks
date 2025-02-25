@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Dumbest Bounding Box Annotator</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: space-around;
+            }
+            .browser {
+                width: 30%;
+            }
+            .annotator {
+                width: 60%;
+            }
+            .pagination {
+                display: flex;
+                justify-content: space-around;
+            }
+            #image {
+                position: relative;
+                overflow: hidden;
+                display: inline-block;
+            }
+            #image img {
+                max-width: 100%;
+                max-height: 80vh;
+                width: auto;
+                height: auto;
+            }
+            #annotation-tool {
+                position: absolute;
+                border: 2px solid blue;
+                box-sizing: border-box;
+                pointer-events: none;
+            }
+            #cross-vert {
+                position: absolute;
+                border-left: 1px solid red;
+                pointer-events: none;
+                height: 100%;
+                top: 0;
+            }
+            #cross-hor {
+                position: absolute;
+                border-top: 1px solid red;
+                pointer-events: none;
+                width: 100%;
+                left: 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="browser">
+            <h2>List of projects</h2>
+            <p>Annotations in this folder ({{ cur_path }}) : {{ count_annotations }}</p>
+            {% for project in subdirs %}
+                <a href="/{{ project }}">{{ project }}</a><br>
+            {% endfor %}
+        </div>
+        <div class="annotator">
+            {% if image %}
+            <h2>Annotation of {{ image.name }} ({{ cur_image + 1 }} / {{ len_images }})</h2>
+            <nav class="pagination">
+                <a href="?image={{ prev_image }}" id="prev-img">Previous</a>
+                <a href="?image={{ next_image }}" id="next-img">Next</a>
+            </nav>
+            <div id="image">
+                <img src="/media/{{ image }}" alt="Image">
+                <div id="annotation-tool"></div>
+                <div id="cross-vert"></div>
+                <div id="cross-hor"></div>
+            </div>
+            <form action="" method="post">
+                <input type="hidden" name="image" value="{{ image }}">
+                <input type="text" name="bbx0" id="bbx0" value="{{ annotations.x0 }}">
+                <input type="text" name="bby0" id="bby0" value="{{ annotations.y0 }}">
+                <input type="text" name="bbx1" id="bbx1" value="{{ annotations.x1 }}">
+                <input type="text" name="bby1" id="bby1" value="{{ annotations.y1}}">
+                <input type="submit" value="Save">
+            </form>
+            <script>
+                const image = document.getElementById('image');
+                const annotationTool = document.getElementById('annotation-tool');
+                const crossY = document.getElementById('cross-vert');
+                const crossX = document.getElementById('cross-hor');
+                const bbx0 = document.getElementById('bbx0');
+                const bby0 = document.getElementById('bby0');
+                const bbx1 = document.getElementById('bbx1');
+                const bby1 = document.getElementById('bby1');
+
+                let isDrawing = false;
+                let x0, y0, x1, y1;
+
+                const showAnnotation = () => {
+                    annotationTool.style.left = bbx0.value * 100 + '%';
+                    annotationTool.style.top = bby0.value * 100 + '%';
+                    annotationTool.style.width = (bbx1.value - bbx0.value) * 100 + '%';
+                    annotationTool.style.height = (bby1.value - bby0.value) * 100 + '%';
+                };
+
+                document.addEventListener('DOMContentLoaded', showAnnotation);
+
+                image.addEventListener('click', e => {
+                    e.preventDefault();
+                    if (!isDrawing) {
+                        x0 = e.offsetX;
+                        y0 = e.offsetY;
+                        isDrawing = true;
+                    } else {
+                        x1 = e.offsetX;
+                        y1 = e.offsetY;
+                        bbx0.value = Math.min(x0, x1) / image.clientWidth;
+                        bby0.value = Math.min(y0, y1) / image.clientHeight;
+                        bbx1.value = Math.max(x0, x1) / image.clientWidth;
+                        bby1.value = Math.max(y0, y1) / image.clientHeight;
+                        showAnnotation();
+                        isDrawing = false;
+                    }
+                });
+
+                image.addEventListener('mousemove', e => {
+                    const x = e.offsetX;
+                    const y = e.offsetY;
+                    crossY.style.left = x + 'px';
+                    crossX.style.top = y + 'px';
+                    if (isDrawing) {
+                        e.preventDefault();
+                        x1 = x;
+                        y1 = y;
+                        annotationTool.style.left = Math.min(x0, x1) + 'px';
+                        annotationTool.style.top = Math.min(y0, y1) + 'px';
+                        annotationTool.style.width = Math.abs(x1 - x0) + 'px';
+                        annotationTool.style.height = Math.abs(y1 - y0) + 'px';
+                    }
+                });
+
+                document.addEventListener('keydown', e => {
+                    // on enter, submit form
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector('form').submit();
+                    }
+                    // on left arrow, go to previous image
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        document.getElementById('prev-img').click();
+                    }
+                    // on right arrow, go to next image
+                    if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        document.getElementById('next-img').click();
+                    }
+                });
+
+            </script>
+            {% endif %}
+        </div>
+    </body>
+</html>

@@ -1,0 +1,8 @@
+/data/
+/venv/
+*.sqlite3
+__pycache__/
+*.pyc
+/training
+*.pth
+*.json

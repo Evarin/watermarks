@@ -1,0 +1,12 @@
+lightning==2.*
+lightning-bolts
+torch==2.2.*
+torchvision
+tqdm
+tensorboard==2.*
+numpy<2
+jupyter
+matplotlib
+# For bounding box annotator
+flask==3.*
+sqlalchemy==2.*
