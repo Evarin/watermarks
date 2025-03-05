@@ -50,7 +50,7 @@ tensorboard --logdir training
 
 # Usage
 
-You can directly download the pretrained models (soon), then use the notebooks to directly process all your data.
+You can directly download the pretrained models for [Huggingface](https://huggingface.co/rchampenois/watermarks), put them into this root directory, then use the notebooks to directly process all your data.
 
 - [Extraction](./notebooks/extraction.ipynb) allows you to extract the watermarks from all the images in a folder
 - [Compare](./notebooks/compare.ipynb) allows you to cross-compare all the extracted watermarks and build a similarity matrix
